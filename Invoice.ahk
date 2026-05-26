@@ -5,7 +5,7 @@ SetWorkingDir %A_ScriptDir%
 
 LoadSettings()
 
-return ; End of Auto-Execute Section
+return 
 
 ; --- FUNCTIONS ---
 
@@ -16,83 +16,96 @@ LoadSettings() {
     IniRead, suffix, settings.ini, Settings, Suffix, S
 }
 
-GenerateInvoice() {
-    global current_num, prefix, suffix
-    formatted_num := Format("{:07}", current_num)
-    return prefix . formatted_num . suffix
+GenerateInvoice(p := "", n := 0, s := "") {
+    
+    global prefix, current_num, suffix
+    target_prefix := (p == "") ? prefix : p
+    target_num := (n == 0) ? current_num : n
+    target_suffix := (s == "") ? suffix : s
+    
+    formatted_num := Format("{:07}", target_num)
+    return target_prefix . formatted_num . target_suffix
 }
 
 ; --- HOTKEYS ---
 
-
 !F9::
+    Critical 
     invoice_string := GenerateInvoice()
     
-    ; Clipboard Backup & Paste method
     ClipboardOld := ClipboardAll
     Clipboard := invoice_string
     ClipWait, 1
+    
     Send ^v
-    Sleep, 50
+    Sleep, 100 
     Clipboard := ClipboardOld
     
-    TrayTip, Auto-Invoice, Sent: %invoice_string%, 1
-    
+    ; AUDIO FEEDBACK
+    SoundBeep, 750, 50 
+    TrayTip, Auto-Invoice, Sent: %invoice_string%, 1, 0x10
     
     current_num += 1
     IniWrite, %current_num%, settings.ini, Sequence, LastNumber
 return
 
-;  -  GUI Control Panel
 !F10::
-    
     LoadSettings() 
-    
-    
     Gui, Destroy 
     
     Gui, Font, s10, Segoe UI
     Gui, Add, GroupBox, x10 y10 w260 h150, Invoice Settings
     
-    ; GUI INPUT AND LABELS
+    ; LIVE UPDATE PREVIEW
     Gui, Add, Text, x25 y35 w100 h20, Prefix:
-    Gui, Add, Edit, x120 y32 w130 h25 vGuiPrefix, %prefix%
+    Gui, Add, Edit, x120 y32 w130 h25 vGuiPrefix gUpdatePreview, %prefix%
     
     Gui, Add, Text, x25 y70 w100 h20, Next Number:
-    Gui, Add, Edit, x120 y67 w130 h25 vGuiNum Number, %current_num% ; 'Number' means bawal mag-type ng letra
+    Gui, Add, Edit, x120 y67 w130 h25 vGuiNum Number gUpdatePreview, %current_num%
     
     Gui, Add, Text, x25 y105 w100 h20, Suffix:
-    Gui, Add, Edit, x120 y102 w130 h25 vGuiSuffix, %suffix%
+    Gui, Add, Edit, x120 y102 w130 h25 vGuiSuffix gUpdatePreview, %suffix%
     
-    ; Preview Label 
+    ; Preview Box na may natatanging kulay/style
+    Gui, Font, b s10, Segoe UI
     current_preview := GenerateInvoice()
-    Gui, Add, Text, x10 y175 w260 h20 Center vGuiPreview +BackgroundTrans, Preview: %current_preview%
+    Gui, Add, Text, x10 y175 w260 h20 Center vGuiPreview +BackgroundTrans +Theme, Preview: %current_preview%
     
-    ;  (Save at Cancel Buttons)
+    ; Buttons
+    Gui, Font, Norm s10, Segoe UI
     Gui, Add, Button, x30 y205 w100 h30 gSaveSettings Default, Save
     Gui, Add, Button, x150 y205 w100 h30 gGuiClose, Cancel
     
-    ; SHOW GUI window
-    Gui, Show, w280 h250, Invoice Config
+    Gui, Show, w280 h250, Invoice Config v2.0
 return
 
 ; --- GUI ACTIONS ---
 
+UpdatePreview:
+    Gui, Submit, NoHide ; Kunin ang data nang hindi sinasara ang GUI
+    ; Gumawa ng temporary preview base sa kasalukuyang tina-type
+    temp_preview := GenerateInvoice(GuiPrefix, GuiNum, GuiSuffix)
+    GuiControl,, GuiPreview, Preview: %temp_preview%
+return
 
 SaveSettings:
-    Gui, Submit 
+    Gui, Submit
     
+    ; Simple Validation: Huwag payagan kung blangko ang Number field
+    if (GuiNum == "") {
+        MsgBox, 48, Error, 'Next Number' cannot be empty!, 2
+        return
+    }
+    
+    GuiNum := GuiNum + 0 
     
     IniWrite, %GuiPrefix%, settings.ini, Settings, Prefix
     IniWrite, %GuiNum%, settings.ini, Sequence, LastNumber
     IniWrite, %GuiSuffix%, settings.ini, Settings, Suffix
     
-    
     LoadSettings()
-    
-    MsgBox, 64, Success, Settings updated successfully!, 1.5
+    MsgBox, 64, Success, Settings updated successfully!, 1.2
 return
-
 
 GuiClose:
     Gui, Destroy
