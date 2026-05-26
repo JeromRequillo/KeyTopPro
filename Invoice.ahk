@@ -82,8 +82,8 @@ return
 ; --- GUI ACTIONS ---
 
 UpdatePreview:
-    Gui, Submit, NoHide ; Kunin ang data nang hindi sinasara ang GUI
-    ; Gumawa ng temporary preview base sa kasalukuyang tina-type
+    Gui, Submit, NoHide 
+    
     temp_preview := GenerateInvoice(GuiPrefix, GuiNum, GuiSuffix)
     GuiControl,, GuiPreview, Preview: %temp_preview%
 return
@@ -91,7 +91,7 @@ return
 SaveSettings:
     Gui, Submit
     
-    ; Simple Validation: Huwag payagan kung blangko ang Number field
+    
     if (GuiNum == "") {
         MsgBox, 48, Error, 'Next Number' cannot be empty!, 2
         return
