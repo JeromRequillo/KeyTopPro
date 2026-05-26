@@ -17,7 +17,6 @@ LoadSettings() {
 }
 
 GenerateInvoice(p := "", n := 0, s := "") {
-    
     global prefix, current_num, suffix
     target_prefix := (p == "") ? prefix : p
     target_num := (n == 0) ? current_num : n
@@ -33,20 +32,19 @@ GenerateInvoice(p := "", n := 0, s := "") {
     Critical 
     invoice_string := GenerateInvoice()
     
-    ClipboardOld := ClipboardAll
-    Clipboard := invoice_string
-    ClipWait, 1
+    SendInput, %invoice_string%
     
-    Send ^v
-    Sleep, 100 
-    Clipboard := ClipboardOld
-    
-    ; AUDIO FEEDBACK
+    ; AUDIO FEEDBACK & TOOLTIP
     SoundBeep, 750, 50 
-    TrayTip, Auto-Invoice, Sent: %invoice_string%, 1, 0x10
+    ToolTip, Sent: %invoice_string%
+    SetTimer, RemoveToolTip, -2000
     
     current_num += 1
     IniWrite, %current_num%, settings.ini, Sequence, LastNumber
+return
+
+RemoveToolTip:
+    ToolTip
 return
 
 !F10::
@@ -66,7 +64,7 @@ return
     Gui, Add, Text, x25 y105 w100 h20, Suffix:
     Gui, Add, Edit, x120 y102 w130 h25 vGuiSuffix gUpdatePreview, %suffix%
     
-    ; Preview Box na may natatanging kulay/style
+    ; Preview Box
     Gui, Font, b s10, Segoe UI
     current_preview := GenerateInvoice()
     Gui, Add, Text, x10 y175 w260 h20 Center vGuiPreview +BackgroundTrans +Theme, Preview: %current_preview%
@@ -83,14 +81,12 @@ return
 
 UpdatePreview:
     Gui, Submit, NoHide 
-    
     temp_preview := GenerateInvoice(GuiPrefix, GuiNum, GuiSuffix)
     GuiControl,, GuiPreview, Preview: %temp_preview%
 return
 
 SaveSettings:
     Gui, Submit
-    
     
     if (GuiNum == "") {
         MsgBox, 48, Error, 'Next Number' cannot be empty!, 2
