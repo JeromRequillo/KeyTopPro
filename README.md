@@ -1,6 +1,6 @@
 # 🎯 KeyTap Pro v4.0.0
 
-KeyTap Pro is a lightweight, portable, and powerful productivity suite built using **AutoHotkey v2**. Initially designed as a simple auto-incrementing invoice generator, it has evolved into a fully featured automation tool equipped with dynamic macro mapping, an automated VAT calculator, and an intuitive tabbed user interface.
+KeyTap Pro is a portable productivity suite built using **AutoHotkey v2**. Initially designed as a simple auto-incrementing invoice generator, it has evolved into a fully featured automation tool equipped with dynamic macro mapping, an automated VAT calculator, and an intuitive tabbed user interface.
 
 With KeyTap Pro, you can eliminate repetitive typing, streamline financial calculations, and manage your custom hotkeys on the fly without ever touching a line of code.
 
